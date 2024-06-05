@@ -138,7 +138,7 @@ local fovTextBox = Instance.new("TextBox")
 local smoothnessTextBox = Instance.new("TextBox")
 local fovVisibilityDropdown = Instance.new("TextButton")
 local dropdownMenu = Instance.new("Frame")
-local dropdownItems = {"Always Show FOV", "Only Show FOV While Aimbot Enabled", "Invisible"}
+local dropdownItems = {"Always Show FOV", "Show FOV While Aimbot Enabled", "Invisible"}
 local gradient = Instance.new("UIGradient")
 local corner = Instance.new("UICorner")
 
@@ -147,7 +147,7 @@ screenGui.Name = "AimBotGui"
 
 aimFrame.Parent = screenGui
 aimFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-aimFrame.Size = UDim2.new(0, 160, 0, 500) -- Adjusted height to fit new dropdown menu
+aimFrame.Size = UDim2.new(0, 240, 0, 540) -- Adjusted width to fit text
 aimFrame.Position = UDim2.new(0, 10, 0, 10)
 aimFrame.Active = true
 aimFrame.Draggable = true
@@ -163,7 +163,7 @@ gradient.Parent = aimFrame
 
 local function styleButton(button)
     button.BackgroundColor3 = Color3.fromRGB(75, 75, 75)
-    button.Size = UDim2.new(0, 140, 0, 30)
+    button.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Font = Enum.Font.SourceSansBold
     button.TextSize = 18
@@ -200,8 +200,8 @@ espButton.Position = UDim2.new(0, 10, 0, 130)
 espButton.Text = "ESP: Off"
 espButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
-    toggle_esp(espEnabled)
     espButton.Text = "ESP: " .. (espEnabled and "On" or "Off")
+    toggle_esp(espEnabled)
 end)
 styleButton(espButton)
 
@@ -223,7 +223,7 @@ styleButton(closeButton)
 
 madeByLabel.Parent = aimFrame
 madeByLabel.Position = UDim2.new(0, 10, 0, 250)
-madeByLabel.Size = UDim2.new(0, 140, 0, 30)
+madeByLabel.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
 madeByLabel.Text = "Made by Bacon"
 madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 madeByLabel.BackgroundTransparency = 1
@@ -241,7 +241,7 @@ styleButton(keybindButton)
 
 fovTextBox.Parent = aimFrame
 fovTextBox.Position = UDim2.new(0, 10, 0, 330)
-fovTextBox.Size = UDim2.new(0, 140, 0, 30)
+fovTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
 fovTextBox.PlaceholderText = "FOV: " .. aim_config.FOV
 fovTextBox.Text = ""
 fovTextBox.Font = Enum.Font.SourceSansBold
@@ -263,7 +263,7 @@ end)
 
 smoothnessTextBox.Parent = aimFrame
 smoothnessTextBox.Position = UDim2.new(0, 10, 0, 370)
-smoothnessTextBox.Size = UDim2.new(0, 140, 0, 30)
+smoothnessTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
 smoothnessTextBox.PlaceholderText = "Smoothness: " .. aim_config.Smoothness
 smoothnessTextBox.Text = ""
 smoothnessTextBox.Font = Enum.Font.SourceSansBold
@@ -285,7 +285,8 @@ end)
 
 fovVisibilityDropdown.Parent = aimFrame
 fovVisibilityDropdown.Position = UDim2.new(0, 10, 0, 410)
-fovVisibilityDropdown.Text = "FOV Visibility: " .. aim_config.FOVVisibility
+fovVisibilityDropdown.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
+fovVisibilityDropdown.Text = "" .. aim_config.FOVVisibility
 fovVisibilityDropdown.MouseButton1Click:Connect(function()
     dropdownMenu.Visible = not dropdownMenu.Visible
 end)
@@ -293,7 +294,7 @@ styleButton(fovVisibilityDropdown)
 
 dropdownMenu.Parent = aimFrame
 dropdownMenu.Position = UDim2.new(0, 10, 0, 450)
-dropdownMenu.Size = UDim2.new(0, 140, 0, 90)
+dropdownMenu.Size = UDim2.new(0, 220, 0, 90) -- Adjusted width to fit text
 dropdownMenu.Visible = false
 dropdownMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 corner:Clone().Parent = dropdownMenu
@@ -302,7 +303,7 @@ for i, item in ipairs(dropdownItems) do
     local dropdownItem = Instance.new("TextButton")
     dropdownItem.Parent = dropdownMenu
     dropdownItem.Position = UDim2.new(0, 0, 0, (i - 1) * 30)
-    dropdownItem.Size = UDim2.new(0, 140, 0, 30)
+    dropdownItem.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
     dropdownItem.Text = item
     dropdownItem.TextColor3 = Color3.fromRGB(255, 255, 255)
     dropdownItem.BackgroundColor3 = Color3.fromRGB(75, 75, 75)
@@ -312,7 +313,7 @@ for i, item in ipairs(dropdownItems) do
 
     dropdownItem.MouseButton1Click:Connect(function()
         aim_config.FOVVisibility = item
-        fovVisibilityDropdown.Text = "FOV Visibility: " .. item
+        fovVisibilityDropdown.Text = "" .. item
         dropdownMenu.Visible = false
     end)
 end
@@ -400,7 +401,7 @@ aimFrame.InputBegan:Connect(function(input)
 end)
 
 aimFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType.Touch then
         dragInput = input
     end
 end)
@@ -411,5 +412,5 @@ input_service.InputChanged:Connect(function(input)
     end
 end)
 
--- initial ESP state
+-- final ESP state
 toggle_esp(espEnabled)
