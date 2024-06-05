@@ -14,7 +14,8 @@ local aim_config = _G.JALON_AIMCONFIG or {
         Enabled = false,
         Value = 0.185
     },
-    AimTarget = "Head"
+    AimTarget = "Head",
+    FOVVisibility = "Always Show FOV" -- Added FOV visibility option
 }
 _G.JALON_AIMCONFIG = _G.JALON_AIMCONFIG or aim_config
 
@@ -135,6 +136,9 @@ local madeByLabel = Instance.new("TextLabel")
 local keybindButton = Instance.new("TextButton")
 local fovTextBox = Instance.new("TextBox")
 local smoothnessTextBox = Instance.new("TextBox")
+local fovVisibilityDropdown = Instance.new("TextButton")
+local dropdownMenu = Instance.new("Frame")
+local dropdownItems = {"Always Show FOV", "Only Show FOV While Aimbot Enabled", "Invisible"}
 local gradient = Instance.new("UIGradient")
 local corner = Instance.new("UICorner")
 
@@ -143,7 +147,7 @@ screenGui.Name = "AimBotGui"
 
 aimFrame.Parent = screenGui
 aimFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-aimFrame.Size = UDim2.new(0, 160, 0, 450)
+aimFrame.Size = UDim2.new(0, 160, 0, 500) -- Adjusted height to fit new dropdown menu
 aimFrame.Position = UDim2.new(0, 10, 0, 10)
 aimFrame.Active = true
 aimFrame.Draggable = true
@@ -203,7 +207,7 @@ styleButton(espButton)
 
 rejoinButton.Parent = aimFrame
 rejoinButton.Position = UDim2.new(0, 10, 0, 170)
-rejoinButton.Text = "Rejoin Server"
+rejoinButton.Text = "Rejoin"
 rejoinButton.MouseButton1Click:Connect(function()
     teleport_service:Teleport(game.PlaceId)
 end)
@@ -279,6 +283,40 @@ smoothnessTextBox.FocusLost:Connect(function(enterPressed)
     end
 end)
 
+fovVisibilityDropdown.Parent = aimFrame
+fovVisibilityDropdown.Position = UDim2.new(0, 10, 0, 410)
+fovVisibilityDropdown.Text = "FOV Visibility: " .. aim_config.FOVVisibility
+fovVisibilityDropdown.MouseButton1Click:Connect(function()
+    dropdownMenu.Visible = not dropdownMenu.Visible
+end)
+styleButton(fovVisibilityDropdown)
+
+dropdownMenu.Parent = aimFrame
+dropdownMenu.Position = UDim2.new(0, 10, 0, 450)
+dropdownMenu.Size = UDim2.new(0, 140, 0, 90)
+dropdownMenu.Visible = false
+dropdownMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+corner:Clone().Parent = dropdownMenu
+
+for i, item in ipairs(dropdownItems) do
+    local dropdownItem = Instance.new("TextButton")
+    dropdownItem.Parent = dropdownMenu
+    dropdownItem.Position = UDim2.new(0, 0, 0, (i - 1) * 30)
+    dropdownItem.Size = UDim2.new(0, 140, 0, 30)
+    dropdownItem.Text = item
+    dropdownItem.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdownItem.BackgroundColor3 = Color3.fromRGB(75, 75, 75)
+    dropdownItem.Font = Enum.Font.SourceSansBold
+    dropdownItem.TextSize = 18
+    corner:Clone().Parent = dropdownItem
+
+    dropdownItem.MouseButton1Click:Connect(function()
+        aim_config.FOVVisibility = item
+        fovVisibilityDropdown.Text = "FOV Visibility: " .. item
+        dropdownMenu.Visible = false
+    end)
+end
+
 input_service.InputBegan:Connect(function(input, gpe)
     if gpe then return end
     if input.UserInputType == Enum.UserInputType.Keyboard then
@@ -306,7 +344,14 @@ end)
 
 -- updates
 run_service.RenderStepped:Connect(function()
-    fovCircle.Visible = aim_config.Enabled
+    local fovVisible = false
+    if aim_config.FOVVisibility == "Always Show FOV" then
+        fovVisible = true
+    elseif aim_config.FOVVisibility == "Only Show FOV While Aimbot Enabled" and aim_config.Enabled then
+        fovVisible = true
+    end
+
+    fovCircle.Visible = fovVisible
     fovCircle.Position = input_service:GetMouseLocation()
     fovCircle.Thickness = 1.5
     fovCircle.NumSides = 18
