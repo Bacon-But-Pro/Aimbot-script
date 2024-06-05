@@ -138,7 +138,7 @@ local fovTextBox = Instance.new("TextBox")
 local smoothnessTextBox = Instance.new("TextBox")
 local fovVisibilityDropdown = Instance.new("TextButton")
 local dropdownMenu = Instance.new("Frame")
-local dropdownItems = {"Always Show FOV", "Show FOV While Aimbot Enabled", "Invisible"}
+local dropdownItems = {"Always Show FOV", "Only Show FOV While Aimbot Enabled", "Invisible"}
 local gradient = Instance.new("UIGradient")
 local corner = Instance.new("UICorner")
 
@@ -224,7 +224,7 @@ styleButton(closeButton)
 madeByLabel.Parent = aimFrame
 madeByLabel.Position = UDim2.new(0, 10, 0, 250)
 madeByLabel.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
-madeByLabel.Text = "Made by Bacon"
+madeByLabel.Text = "Made by Jalon#0812"
 madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 madeByLabel.BackgroundTransparency = 1
 madeByLabel.Font = Enum.Font.SourceSansBold
@@ -313,7 +313,7 @@ for i, item in ipairs(dropdownItems) do
 
     dropdownItem.MouseButton1Click:Connect(function()
         aim_config.FOVVisibility = item
-        fovVisibilityDropdown.Text = "" .. item
+        fovVisibilityDropdown.Text = "FOV Visibility: " .. item
         dropdownMenu.Visible = false
     end)
 end
@@ -412,5 +412,5 @@ input_service.InputChanged:Connect(function(input)
     end
 end)
 
--- final ESP state
+-- initial ESP state
 toggle_esp(espEnabled)
