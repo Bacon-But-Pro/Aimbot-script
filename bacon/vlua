@@ -313,7 +313,7 @@ for i, item in ipairs(dropdownItems) do
 
     dropdownItem.MouseButton1Click:Connect(function()
         aim_config.FOVVisibility = item
-        fovVisibilityDropdown.Text = "FOV Visibility: " .. item
+        fovVisibilityDropdown.Text = "" .. item
         dropdownMenu.Visible = false
     end)
 end
