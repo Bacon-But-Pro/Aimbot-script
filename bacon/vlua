@@ -2,6 +2,7 @@
 local aim_config = _G.JALON_AIMCONFIG or {
     Enabled = true,
     KeyActivation = Enum.KeyCode.LeftShift,
+    GuiToggleKey = Enum.KeyCode.LeftAlt,
 
     FOV = 150,
     TeamCheck = true,
@@ -113,8 +114,8 @@ local function update_esp()
                 local box = espBoxes[plr]
                 box.Visible = espEnabled and onScreen and (not aim_config.TeamCheck or plr.TeamColor ~= player.TeamColor)
                 if box.Visible then
-                    box.Size = Vector2.new(50, 100) -- Adjust the size as needed
-                    box.Position = Vector2.new(screenPos.X - 25, screenPos.Y - 50) -- Adjust the position as needed
+                    box.Size = Vector2.new(100, 50) -- Adjust the size as needed
+                    box.Position = Vector2.new(screenPos.X - 50, screenPos.Y - 25) -- Adjust the position as needed
                 end
             end
         end
@@ -134,135 +135,213 @@ local madeByLabel = Instance.new("TextLabel")
 local keybindButton = Instance.new("TextButton")
 local fovTextBox = Instance.new("TextBox")
 local smoothnessTextBox = Instance.new("TextBox")
+local gradient = Instance.new("UIGradient")
+local corner = Instance.new("UICorner")
 
 screenGui.Parent = player:WaitForChild("PlayerGui")
 screenGui.Name = "AimBotGui"
 
 aimFrame.Parent = screenGui
 aimFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-aimFrame.Size = UDim2.new(0, 140, 0, 400)
+aimFrame.Size = UDim2.new(0, 160, 0, 450)
 aimFrame.Position = UDim2.new(0, 10, 0, 10)
 aimFrame.Active = true
 aimFrame.Draggable = true
 
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = aimFrame
+
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(75, 75, 75))
+}
+gradient.Parent = aimFrame
+
+local function styleButton(button)
+    button.BackgroundColor3 = Color3.fromRGB(75, 75, 75)
+    button.Size = UDim2.new(0, 140, 0, 30)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.SourceSansBold
+    button.TextSize = 18
+    corner:Clone().Parent = button
+end
+
 aimHeadButton.Parent = aimFrame
-aimHeadButton.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-aimHeadButton.Size = UDim2.new(0, 120, 0, 30)
 aimHeadButton.Position = UDim2.new(0, 10, 0, 10)
 aimHeadButton.Text = "Aim Head"
-aimHeadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 aimHeadButton.MouseButton1Click:Connect(function()
     aim_config.AimTarget = "Head"
 end)
+styleButton(aimHeadButton)
 
 aimTorsoButton.Parent = aimFrame
-aimTorsoButton.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-aimTorsoButton.Size = UDim2.new(0, 120, 0, 30)
 aimTorsoButton.Position = UDim2.new(0, 10, 0, 50)
 aimTorsoButton.Text = "Aim Torso"
-aimTorsoButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 aimTorsoButton.MouseButton1Click:Connect(function()
     aim_config.AimTarget = "HumanoidRootPart"
 end)
+styleButton(aimTorsoButton)
 
 teamCheckButton.Parent = aimFrame
-teamCheckButton.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-teamCheckButton.Size = UDim2.new(0, 120, 0, 30)
 teamCheckButton.Position = UDim2.new(0, 10, 0, 90)
 teamCheckButton.Text = "Team Check: On"
-teamCheckButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 teamCheckButton.MouseButton1Click:Connect(function()
     aim_config.TeamCheck = not aim_config.TeamCheck
     teamCheckButton.Text = "Team Check: " .. (aim_config.TeamCheck and "On" or "Off")
 end)
+styleButton(teamCheckButton)
 
 espButton.Parent = aimFrame
-espButton.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-espButton.Size = UDim2.new(0, 120, 0, 30)
 espButton.Position = UDim2.new(0, 10, 0, 130)
 espButton.Text = "ESP: Off"
-espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 espButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     toggle_esp(espEnabled)
     espButton.Text = "ESP: " .. (espEnabled and "On" or "Off")
 end)
+styleButton(espButton)
 
 rejoinButton.Parent = aimFrame
-rejoinButton.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-rejoinButton.Size = UDim2.new(0, 120, 0, 30)
 rejoinButton.Position = UDim2.new(0, 10, 0, 170)
-rejoinButton.Text = "Rejoin"
-rejoinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+rejoinButton.Text = "Rejoin Server"
 rejoinButton.MouseButton1Click:Connect(function()
-    teleport_service:Teleport(game.PlaceId, player)
+    teleport_service:Teleport(game.PlaceId)
 end)
+styleButton(rejoinButton)
 
 closeButton.Parent = aimFrame
-closeButton.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-closeButton.Size = UDim2.new(0, 120, 0, 30)
 closeButton.Position = UDim2.new(0, 10, 0, 210)
 closeButton.Text = "Close GUI"
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.MouseButton1Click:Connect(function()
-    guiVisible = not guiVisible
-    aimFrame.Visible = guiVisible
-    closeButton.Text = guiVisible and "Close GUI" or "Open GUI"
+    aimFrame.Visible = false
 end)
+styleButton(closeButton)
+
+madeByLabel.Parent = aimFrame
+madeByLabel.Position = UDim2.new(0, 10, 0, 250)
+madeByLabel.Size = UDim2.new(0, 140, 0, 30)
+madeByLabel.Text = "Made by Bacon"
+madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+madeByLabel.BackgroundTransparency = 1
+madeByLabel.Font = Enum.Font.SourceSansBold
+madeByLabel.TextSize = 18
 
 keybindButton.Parent = aimFrame
-keybindButton.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-keybindButton.Size = UDim2.new(0, 120, 0, 30)
-keybindButton.Position = UDim2.new(0, 10, 0, 250)
-keybindButton.Text = "Keybind: LeftShift"
-keybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+keybindButton.Position = UDim2.new(0, 10, 0, 290)
+keybindButton.Text = "Keybind: " .. aim_config.KeyActivation.Name
 keybindButton.MouseButton1Click:Connect(function()
     selectingKeybind = true
-    keybindButton.Text = "Press a key..."
+    keybindButton.Text = "Press any key..."
 end)
+styleButton(keybindButton)
 
 fovTextBox.Parent = aimFrame
-fovTextBox.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-fovTextBox.Size = UDim2.new(0, 120, 0, 30)
-fovTextBox.Position = UDim2.new(0, 10, 0, 290)
-fovTextBox.Text = tostring(aim_config.FOV)
+fovTextBox.Position = UDim2.new(0, 10, 0, 330)
+fovTextBox.Size = UDim2.new(0, 140, 0, 30)
+fovTextBox.PlaceholderText = "FOV: " .. aim_config.FOV
+fovTextBox.Text = ""
+fovTextBox.Font = Enum.Font.SourceSansBold
+fovTextBox.TextSize = 18
 fovTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+fovTextBox.BackgroundColor3 = Color3.fromRGB(75, 75, 75)
+corner:Clone().Parent = fovTextBox
+
 fovTextBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
-        local newFov = tonumber(fovTextBox.Text)
-        if newFov then
-            aim_config.FOV = newFov
-            fovTextBox.Text = tostring(aim_config.FOV)
+        local newFOV = tonumber(fovTextBox.Text)
+        if newFOV then
+            aim_config.FOV = newFOV
+            fovTextBox.PlaceholderText = "FOV: " .. aim_config.FOV
+            fovTextBox.Text = ""
         end
     end
 end)
 
 smoothnessTextBox.Parent = aimFrame
-smoothnessTextBox.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-smoothnessTextBox.Size = UDim2.new(0, 120, 0, 30)
-smoothnessTextBox.Position = UDim2.new(0, 10, 0, 330)
-smoothnessTextBox.Text = tostring(aim_config.Smoothness)
+smoothnessTextBox.Position = UDim2.new(0, 10, 0, 370)
+smoothnessTextBox.Size = UDim2.new(0, 140, 0, 30)
+smoothnessTextBox.PlaceholderText = "Smoothness: " .. aim_config.Smoothness
+smoothnessTextBox.Text = ""
+smoothnessTextBox.Font = Enum.Font.SourceSansBold
+smoothnessTextBox.TextSize = 18
 smoothnessTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+smoothnessTextBox.BackgroundColor3 = Color3.fromRGB(75, 75, 75)
+corner:Clone().Parent = smoothnessTextBox
+
 smoothnessTextBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local newSmoothness = tonumber(smoothnessTextBox.Text)
         if newSmoothness then
             aim_config.Smoothness = newSmoothness
-            smoothnessTextBox.Text = tostring(aim_config.Smoothness)
+            smoothnessTextBox.PlaceholderText = "Smoothness: " .. aim_config.Smoothness
+            smoothnessTextBox.Text = ""
         end
     end
 end)
 
-madeByLabel.Parent = aimFrame
-madeByLabel.BackgroundTransparency = 1
-madeByLabel.Size = UDim2.new(0, 120, 0, 20)
-madeByLabel.Position = UDim2.new(0, 10, 0, 370)
-madeByLabel.Text = "Made by BaconButPro"
-madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+input_service.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        if selectingKeybind then
+            aim_config.KeyActivation = input.KeyCode
+            keybindButton.Text = "Keybind: " .. input.KeyCode.Name
+            selectingKeybind = false
+        elseif input.KeyCode == aim_config.GuiToggleKey then
+            guiVisible = not guiVisible
+            aimFrame.Visible = guiVisible
+        elseif input.KeyCode == aim_config.KeyActivation then
+            aim_config.Enabled = true
+        end
+    end
+end)
+
+input_service.InputEnded:Connect(function(input, gpe)
+    if gpe then return end
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        if input.KeyCode == aim_config.KeyActivation then
+            aim_config.Enabled = false
+        end
+    end
+end)
+
+-- updates
+run_service.RenderStepped:Connect(function()
+    fovCircle.Visible = aim_config.Enabled
+    fovCircle.Position = input_service:GetMouseLocation()
+    fovCircle.Thickness = 1.5
+    fovCircle.NumSides = 18
+    fovCircle.Radius = aim_config.FOV
+    fovCircle.Color = Color3.fromRGB(255, 255, 255)
+    fovCircle.Filled = false
+
+    update_esp()
+
+    if aim_config.Enabled then
+        local nearest_plr_data = get_nearest_player()
+        if nearest_plr_data then
+            current_nearest_plr = nearest_plr_data.aimPart
+        else
+            current_nearest_plr = nil
+        end
+    else
+        current_nearest_plr = nil
+    end
+
+    if current_nearest_plr then
+        local predicted_camera = (if aim_config.Prediction.Enabled then get_camera_prediction(current_nearest_plr) else current_nearest_plr.CFrame)
+        local current_camera = camera.CFrame.Position
+        camera.CFrame = CFrame.lookAt(current_camera, predicted_camera.Position:Lerp(current_camera, aim_config.Smoothness))
+    end
+end)
 
 -- Dragging functionality
-local function onInputBegan(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+local function updateInput(input)
+    local delta = input.Position - dragStart
+    aimFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+aimFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = aimFrame.Position
@@ -272,130 +351,20 @@ local function onInputBegan(input)
                 dragging = false
             end
         end)
-    elseif input.UserInputType == Enum.UserInputType.Keyboard and selectingKeybind then
-        aim_config.KeyActivation = input.KeyCode
-        keybindButton.Text = "Keybind: " .. tostring(aim_config.KeyActivation):match("%w+$")
-        selectingKeybind = false
     end
-end
+end)
 
-local function onInputChanged(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
+aimFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
         dragInput = input
     end
-end
+end)
 
-local function update(input)
-    if dragging and input == dragInput then
-        local delta = input.Position - dragStart
-        aimFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end
-
-aimFrame.InputBegan:Connect(onInputBegan)
-aimFrame.InputChanged:Connect(onInputChanged)
-input_service.InputChanged:Connect(update)
-
--- Keybind to toggle GUI visibility
-input_service.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.LeftAlt then
-        guiVisible = not guiVisible
-        aimFrame.Visible = guiVisible
+input_service.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        updateInput(input)
     end
 end)
 
--- main
-targetBox.Color = Color3.fromRGB(0, 185, 35)
-targetBox.Filled = true
-targetBox.Size = Vector2.new(20, 20)
-targetBox.Thickness = 20
-targetBox.Transparency = .6
-
-fovCircle.Color = Color3.fromRGB(0, 185, 35)
-fovCircle.Thickness = 2
-fovCircle.Transparency = .6
-fovCircle.Visible = true
-
-run_service.PreSimulation:Connect(function()
-    current_nearest_plr = get_nearest_player()
-
-    fovCircle.Radius = aim_config.FOV
-    fovCircle.Position = input_service:GetMouseLocation()
-
-    if current_nearest_plr then
-        local screen_pos, on_screen = camera:WorldToViewportPoint(current_nearest_plr.aimPart.Position)
-
-        targetBox.Visible = on_screen
-        targetBox.Position = (Vector2.new(screen_pos.X, screen_pos.Y) - (targetBox.Size / 2))
-
-        if input_service:IsKeyDown(aim_config.KeyActivation) then
-            local target_position = (if aim_config.Prediction.Enabled then get_camera_prediction(current_nearest_plr.aimPart) else current_nearest_plr.aimPart)
-            local horizontal_look = CFrame.lookAt(camera.CFrame.Position, target_position.Position)
-
-            camera.CFrame = camera.CFrame:Lerp(horizontal_look, aim_config.Smoothness)
-        end
-    else
-        targetBox.Visible = false
-        targetBox.Position = Vector3.zero
-    end
-    
-    update_esp()
-end)
-
--- Add a rejoin button and close/open GUI button
-rejoinButton.Parent = aimFrame
-rejoinButton.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-rejoinButton.Size = UDim2.new(0, 120, 0, 30)
-rejoinButton.Position = UDim2.new(0, 10, 0, 170)
-rejoinButton.Text = "Rejoin"
-rejoinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-rejoinButton.MouseButton1Click:Connect(function()
-    teleport_service:Teleport(game.PlaceId, player)
-end)
-
-closeButton.Parent = aimFrame
-closeButton.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-closeButton.Size = UDim2.new(0, 120, 0, 30)
-closeButton.Position = UDim2.new(0, 10, 0, 210)
-closeButton.Text = "Close GUI"
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButton.MouseButton1Click:Connect(function()
-    guiVisible = not guiVisible
-    aimFrame.Visible = guiVisible
-    closeButton.Text = guiVisible and "Close GUI" or "Open GUI"
-end)
-
--- Keybind to toggle GUI visibility
-input_service.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.LeftAlt then
-        guiVisible = not guiVisible
-        aimFrame.Visible = guiVisible
-    end
-end)
-
--- main loop
-run_service.PreSimulation:Connect(function()
-    current_nearest_plr = get_nearest_player()
-
-    fovCircle.Radius = aim_config.FOV
-    fovCircle.Position = input_service:GetMouseLocation()
-
-    if current_nearest_plr then
-        local screen_pos, on_screen = camera:WorldToViewportPoint(current_nearest_plr.aimPart.Position)
-
-        targetBox.Visible = on_screen
-        targetBox.Position = (Vector2.new(screen_pos.X, screen_pos.Y) - (targetBox.Size / 2))
-
-        if input_service:IsKeyDown(aim_config.KeyActivation) then
-            local target_position = (if aim_config.Prediction.Enabled then get_camera_prediction(current_nearest_plr.aimPart) else current_nearest_plr.aimPart)
-            local horizontal_look = CFrame.lookAt(camera.CFrame.Position, target_position.Position)
-
-            camera.CFrame = camera.CFrame:Lerp(horizontal_look, aim_config.Smoothness)
-        end
-    else
-        targetBox.Visible = false
-        targetBox.Position = Vector3.zero
-    end
-    
-    update_esp()
-end)
+-- initial ESP state
+toggle_esp(espEnabled)
