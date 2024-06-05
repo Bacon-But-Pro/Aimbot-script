@@ -132,15 +132,15 @@ local rejoinButton = Instance.new("TextButton")
 local closeButton = Instance.new("TextButton")
 local madeByLabel = Instance.new("TextLabel")
 local keybindButton = Instance.new("TextButton")
-local fovSlider = Instance.new("TextButton")
-local smoothnessSlider = Instance.new("TextButton")
+local fovTextBox = Instance.new("TextBox")
+local smoothnessTextBox = Instance.new("TextBox")
 
 screenGui.Parent = player:WaitForChild("PlayerGui")
 screenGui.Name = "AimBotGui"
 
 aimFrame.Parent = screenGui
 aimFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-aimFrame.Size = UDim2.new(0, 140, 0, 370)
+aimFrame.Size = UDim2.new(0, 140, 0, 400)
 aimFrame.Position = UDim2.new(0, 10, 0, 10)
 aimFrame.Active = true
 aimFrame.Draggable = true
@@ -221,31 +221,35 @@ keybindButton.MouseButton1Click:Connect(function()
     keybindButton.Text = "Press a key..."
 end)
 
-fovSlider.Parent = aimFrame
-fovSlider.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-fovSlider.Size = UDim2.new(0, 120, 0, 30)
-fovSlider.Position = UDim2.new(0, 10, 0, 290)
-fovSlider.Text = "FOV: " .. tostring(aim_config.FOV)
-fovSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
-fovSlider.MouseButton1Click:Connect(function()
-    local newFov = tonumber(gui_service:PromptInput("Enter FOV", tostring(aim_config.FOV)))
-    if newFov then
-        aim_config.FOV = newFov
-        fovSlider.Text = "FOV: " .. tostring(aim_config.FOV)
+fovTextBox.Parent = aimFrame
+fovTextBox.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
+fovTextBox.Size = UDim2.new(0, 120, 0, 30)
+fovTextBox.Position = UDim2.new(0, 10, 0, 290)
+fovTextBox.Text = tostring(aim_config.FOV)
+fovTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+fovTextBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local newFov = tonumber(fovTextBox.Text)
+        if newFov then
+            aim_config.FOV = newFov
+            fovTextBox.Text = tostring(aim_config.FOV)
+        end
     end
 end)
 
-smoothnessSlider.Parent = aimFrame
-smoothnessSlider.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
-smoothnessSlider.Size = UDim2.new(0, 120, 0, 30)
-smoothnessSlider.Position = UDim2.new(0, 10, 0, 330)
-smoothnessSlider.Text = "Smoothness: " .. tostring(aim_config.Smoothness)
-smoothnessSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
-smoothnessSlider.MouseButton1Click:Connect(function()
-    local newSmoothness = tonumber(gui_service:PromptInput("Enter Smoothness", tostring(aim_config.Smoothness)))
-    if newSmoothness then
-        aim_config.Smoothness = newSmoothness
-        smoothnessSlider.Text = "Smoothness: " .. tostring(aim_config.Smoothness)
+smoothnessTextBox.Parent = aimFrame
+smoothnessTextBox.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
+smoothnessTextBox.Size = UDim2.new(0, 120, 0, 30)
+smoothnessTextBox.Position = UDim2.new(0, 10, 0, 330)
+smoothnessTextBox.Text = tostring(aim_config.Smoothness)
+smoothnessTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+smoothnessTextBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local newSmoothness = tonumber(smoothnessTextBox.Text)
+        if newSmoothness then
+            aim_config.Smoothness = newSmoothness
+            smoothnessTextBox.Text = tostring(aim_config.Smoothness)
+        end
     end
 end)
 
@@ -312,6 +316,64 @@ fovCircle.Thickness = 2
 fovCircle.Transparency = .6
 fovCircle.Visible = true
 
+run_service.PreSimulation:Connect(function()
+    current_nearest_plr = get_nearest_player()
+
+    fovCircle.Radius = aim_config.FOV
+    fovCircle.Position = input_service:GetMouseLocation()
+
+    if current_nearest_plr then
+        local screen_pos, on_screen = camera:WorldToViewportPoint(current_nearest_plr.aimPart.Position)
+
+        targetBox.Visible = on_screen
+        targetBox.Position = (Vector2.new(screen_pos.X, screen_pos.Y) - (targetBox.Size / 2))
+
+        if input_service:IsKeyDown(aim_config.KeyActivation) then
+            local target_position = (if aim_config.Prediction.Enabled then get_camera_prediction(current_nearest_plr.aimPart) else current_nearest_plr.aimPart)
+            local horizontal_look = CFrame.lookAt(camera.CFrame.Position, target_position.Position)
+
+            camera.CFrame = camera.CFrame:Lerp(horizontal_look, aim_config.Smoothness)
+        end
+    else
+        targetBox.Visible = false
+        targetBox.Position = Vector3.zero
+    end
+    
+    update_esp()
+end)
+
+-- Add a rejoin button and close/open GUI button
+rejoinButton.Parent = aimFrame
+rejoinButton.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
+rejoinButton.Size = UDim2.new(0, 120, 0, 30)
+rejoinButton.Position = UDim2.new(0, 10, 0, 170)
+rejoinButton.Text = "Rejoin"
+rejoinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+rejoinButton.MouseButton1Click:Connect(function()
+    teleport_service:Teleport(game.PlaceId, player)
+end)
+
+closeButton.Parent = aimFrame
+closeButton.BackgroundColor3 = Color3.fromRGB(0, 185, 35)
+closeButton.Size = UDim2.new(0, 120, 0, 30)
+closeButton.Position = UDim2.new(0, 10, 0, 210)
+closeButton.Text = "Close GUI"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.MouseButton1Click:Connect(function()
+    guiVisible = not guiVisible
+    aimFrame.Visible = guiVisible
+    closeButton.Text = guiVisible and "Close GUI" or "Open GUI"
+end)
+
+-- Keybind to toggle GUI visibility
+input_service.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.LeftAlt then
+        guiVisible = not guiVisible
+        aimFrame.Visible = guiVisible
+    end
+end)
+
+-- main loop
 run_service.PreSimulation:Connect(function()
     current_nearest_plr = get_nearest_player()
 
