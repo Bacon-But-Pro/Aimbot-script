@@ -224,7 +224,7 @@ styleButton(closeButton)
 madeByLabel.Parent = aimFrame
 madeByLabel.Position = UDim2.new(0, 10, 0, 250)
 madeByLabel.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
-madeByLabel.Text = "Made by Jalon#0812"
+madeByLabel.Text = "Made by Bacon"
 madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 madeByLabel.BackgroundTransparency = 1
 madeByLabel.Font = Enum.Font.SourceSansBold
