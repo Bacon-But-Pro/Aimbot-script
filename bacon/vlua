@@ -139,6 +139,8 @@ local smoothnessTextBox = Instance.new("TextBox")
 local fovVisibilityDropdown = Instance.new("TextButton")
 local dropdownMenu = Instance.new("Frame")
 local dropdownItems = {"Always Show FOV", "Only Show FOV While Aimbot Enabled", "Invisible"}
+local speedTextBox = Instance.new("TextBox") -- New speed textbox
+local jumpTextBox = Instance.new("TextBox") -- New jump textbox
 local gradient = Instance.new("UIGradient")
 local corner = Instance.new("UICorner")
 
@@ -240,8 +242,8 @@ end)
 styleButton(keybindButton)
 
 fovTextBox.Parent = aimFrame
-fovTextBox.Position = UDim2.new(0, 10, 0, 330)
-fovTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
+fovTextBox.Position = UDim2.new(0, 10, 0, 451) -- Adjusted position
+fovTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 fovTextBox.PlaceholderText = "FOV: " .. aim_config.FOV
 fovTextBox.Text = ""
 fovTextBox.Font = Enum.Font.SourceSansBold
@@ -262,8 +264,8 @@ fovTextBox.FocusLost:Connect(function(enterPressed)
 end)
 
 smoothnessTextBox.Parent = aimFrame
-smoothnessTextBox.Position = UDim2.new(0, 10, 0, 370)
-smoothnessTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
+smoothnessTextBox.Position = UDim2.new(0, 10, 0, 491) -- Adjusted position
+smoothnessTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 smoothnessTextBox.PlaceholderText = "Smoothness: " .. aim_config.Smoothness
 smoothnessTextBox.Text = ""
 smoothnessTextBox.Font = Enum.Font.SourceSansBold
@@ -292,6 +294,41 @@ fovVisibilityDropdown.MouseButton1Click:Connect(function()
 end)
 styleButton(fovVisibilityDropdown)
 
+-- Speed and Jump Power Changers
+speedTextBox.Parent = aimFrame
+speedTextBox.Position = UDim2.new(0, 10, 0, 330) -- Adjusted position to fit within the aimFrame
+speedTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
+speedTextBox.PlaceholderText = "Enter Speed Value"
+speedTextBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local newValue = tonumber(speedTextBox.Text)
+        if newValue then
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = newValue
+            end
+        end
+    end
+end)
+styleButton(speedTextBox)
+
+jumpTextBox.Parent = aimFrame
+jumpTextBox.Position = UDim2.new(0, 10, 0, 370) -- Adjusted position to fit within the aimFrame
+jumpTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
+jumpTextBox.PlaceholderText = "Enter Jump Power Value"
+jumpTextBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local newValue = tonumber(jumpTextBox.Text)
+        if newValue then
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.JumpPower = newValue
+            end
+        end
+    end
+end)
+styleButton(jumpTextBox)
+
 dropdownMenu.Parent = aimFrame
 dropdownMenu.Position = UDim2.new(0, 10, 0, 450)
 dropdownMenu.Size = UDim2.new(0, 220, 0, 90) -- Adjusted width to fit text
@@ -317,6 +354,10 @@ for i, item in ipairs(dropdownItems) do
         dropdownMenu.Visible = false
     end)
 end
+
+fovVisibilityDropdown.Parent = aimFrame
+fovVisibilityDropdown.Position = UDim2.new(0, 10, 0, 410) -- Placed here
+fovVisibilityDropdown.Size = UDim2.new(0, 220, 0, 30) -- Placed here
 
 input_service.InputBegan:Connect(function(input, gpe)
     if gpe then return end
