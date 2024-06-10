@@ -1,14 +1,12 @@
--- aim configuration
+-- Aim configuration
 local aim_config = _G.JALON_AIMCONFIG or {
     Enabled = true,
     KeyActivation = Enum.KeyCode.LeftShift,
     GuiToggleKey = Enum.KeyCode.LeftAlt,
-
     FOV = 150,
     TeamCheck = true,
     DistanceCheck = true,
     VisibleCheck = true,
-
     Smoothness = 0.975,
     Prediction = {
         Enabled = false,
@@ -19,19 +17,19 @@ local aim_config = _G.JALON_AIMCONFIG or {
 }
 _G.JALON_AIMCONFIG = _G.JALON_AIMCONFIG or aim_config
 
--- services
+-- Services
 local input_service = game:GetService("UserInputService")
 local players = game:GetService("Players")
 local run_service = game:GetService("RunService")
 local gui_service = game:GetService("StarterGui")
 local teleport_service = game:GetService("TeleportService")
 
--- objects
+-- Objects
 local camera = workspace.CurrentCamera
 local player = players.LocalPlayer
 local fovCircle, targetBox = Drawing.new("Circle"), Drawing.new("Square")
 
--- variables
+-- Variables
 local current_nearest_plr
 local dragging = false
 local dragInput
@@ -41,15 +39,21 @@ local espEnabled = false
 local guiVisible = true
 local selectingKeybind = false
 
--- functions
+-- Functions
 local function is_player_valid(plrArg)
     local plrChar = plrArg.Character
     local plrHumanoid, target_part = (plrChar and plrChar:FindFirstChildWhichIsA("Humanoid")), (plrChar and plrChar:FindFirstChild(aim_config.AimTarget))
-    return plrArg ~= player and (plrChar and (plrHumanoid and plrHumanoid.Health ~= 0)) and not plrArg.Character:FindFirstChildWhichIsA("ForceField") and (if aim_config.TeamCheck then (plrArg.Neutral or plrArg.TeamColor ~= player.TeamColor) else true), target_part
+    if not plrChar or not plrHumanoid or not target_part or plrArg == player or plrHumanoid.Health == 0 or plrChar:FindFirstChildWhichIsA("ForceField") then
+        return false, nil
+    end
+    if aim_config.TeamCheck and (plrArg.TeamColor == player.TeamColor and not plrArg.Neutral) then
+        return false, nil
+    end
+    return true, target_part
 end
 
 local function get_rootpart(plr)
-    return (if plr.Character then plr.Character:FindFirstChild(aim_config.AimTarget) else nil)
+    return plr.Character and plr.Character:FindFirstChild(aim_config.AimTarget) or nil
 end
 
 local function in_line_of_sight(origin_pos, ...)
@@ -61,10 +65,9 @@ local function get_vel_prediction(velocity)
 end
 
 local function get_camera_prediction(predicting_part)
-    return predicting_part.CFrame + get_vel_prediction(predicting_part.Velocity) * (aim_config.Prediction.Value)
+    return predicting_part.CFrame + get_vel_prediction(predicting_part.Velocity) * aim_config.Prediction.Value
 end
 
--- gets nearest player relative to cursor
 local function get_nearest_player()
     local nearest_plr_data = {aimPart = nil, cursor_dist = math.huge, char_dist = math.huge}
 
@@ -75,33 +78,49 @@ local function get_nearest_player()
         local fov_dist = (input_service:GetMouseLocation() - Vector2.new(screen_pos.X, screen_pos.Y)).Magnitude
         local char_dist = (get_rootpart(player).Position - target_part.Position).Magnitude
 
-        if (not aim_config.VisibleCheck or (on_screen and in_line_of_sight(camera.CFrame, plr.Character))) then
-            if ((fov_dist <= aim_config.FOV) and (fov_dist < nearest_plr_data.cursor_dist)) and (not aim_config.DistanceCheck or (char_dist < nearest_plr_data.char_dist)) then
+        if not aim_config.VisibleCheck or (on_screen and in_line_of_sight(camera.CFrame, plr.Character)) then
+            if (fov_dist <= aim_config.FOV and fov_dist < nearest_plr_data.cursor_dist) and (not aim_config.DistanceCheck or char_dist < nearest_plr_data.char_dist) then
                 nearest_plr_data.aimPart = target_part
                 nearest_plr_data.cursor_dist = fov_dist
                 nearest_plr_data.char_dist = char_dist
             end
         end
     end
-    return (if nearest_plr_data.aimPart then nearest_plr_data else nil)
+    return nearest_plr_data.aimPart and nearest_plr_data or nil
 end
 
--- ESP functionality
+-- ESP settings
 local espBoxes = {}
+local espHealthBars = {}
+local espTracers = {}
+local espDistances = {}
 
+-- Function to toggle ESP
 local function toggle_esp(state)
     espEnabled = state
     for _, box in pairs(espBoxes) do
         box.Visible = state
     end
+    for _, bar in pairs(espHealthBars) do
+        bar.Visible = state
+    end
+    for _, tracer in pairs(espTracers) do
+        tracer.Visible = state
+    end
+    for _, distance in pairs(espDistances) do
+        distance.Visible = state
+    end
 end
 
+-- Function to update ESP
 local function update_esp()
     for _, plr in players:GetPlayers() do
         if plr ~= player then
             local plrChar = plr.Character
             if plrChar and plrChar:FindFirstChild("HumanoidRootPart") then
                 local rootPart = plrChar:FindFirstChild("HumanoidRootPart")
+                local head = plrChar:FindFirstChild("Head")
+                local humanoid = plrChar:FindFirstChild("Humanoid")
                 local screenPos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
 
                 if not espBoxes[plr] then
@@ -112,16 +131,112 @@ local function update_esp()
                     espBoxes[plr] = box
                 end
 
+                if not espHealthBars[plr] then
+                    local bar = Drawing.new("Square")
+                    bar.Color = Color3.fromRGB(0, 255, 0)
+                    bar.Thickness = 2
+                    bar.Filled = true
+                    espHealthBars[plr] = bar
+                end
+
+                if not espTracers[plr] then
+                    local tracer = Drawing.new("Line")
+                    tracer.Color = Color3.fromRGB(255, 255, 255)
+                    tracer.Thickness = 2
+                    espTracers[plr] = tracer
+                end
+
+                if not espDistances[plr] then
+                    local distanceLabel = Drawing.new("Text")
+                    distanceLabel.Color = Color3.fromRGB(255, 255, 255)
+                    distanceLabel.Size = 20
+                    distanceLabel.Center = true
+                    espDistances[plr] = distanceLabel
+                end
+
                 local box = espBoxes[plr]
+                local bar = espHealthBars[plr]
+                local tracer = espTracers[plr]
+                local distanceLabel = espDistances[plr]
+
                 box.Visible = espEnabled and onScreen and (not aim_config.TeamCheck or plr.TeamColor ~= player.TeamColor)
+                bar.Visible = box.Visible
+                tracer.Visible = box.Visible
+                distanceLabel.Visible = box.Visible
+
                 if box.Visible then
-                    box.Size = Vector2.new(100, 50) -- Adjust the size as needed
-                    box.Position = Vector2.new(screenPos.X - 50, screenPos.Y - 25) -- Adjust the position as needed
+                    local boxSize = Vector3.new(4, 6, 0) -- Adjust the size here
+                    local rootPos = camera:WorldToViewportPoint(rootPart.Position)
+                    local headPos = camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0))
+                    
+                    box.Size = Vector2.new(boxSize.X * 10, boxSize.Y * 10)
+                    box.Position = Vector2.new(rootPos.X - box.Size.X / 2, rootPos.Y - box.Size.Y / 2)
+                    
+                    bar.Size = Vector2.new(2, box.Size.Y)
+                    bar.Position = Vector2.new(box.Position.X - bar.Size.X - 2, box.Position.Y + (box.Size.Y - bar.Size.Y))
+
+                    tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    tracer.To = Vector2.new(screenPos.X, screenPos.Y)
+
+                    local distance = (player.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
+                    distanceLabel.Text = string.format("%dm", math.floor(distance))
+                    distanceLabel.Position = Vector2.new(screenPos.X, screenPos.Y - 60)
                 end
             end
         end
     end
 end
+
+-- Function to reset ESP
+local function reset_esp()
+    espEnabled = false
+    toggle_esp(false)
+    espEnabled = true
+    toggle_esp(true)
+end
+
+-- Watchdog Timer function
+local function watchdog_timer()
+    while wait(60) do  -- adjust the interval as needed (e.g., every 60 seconds)
+        reset_esp()
+    end
+end
+
+-- Start the watchdog timer in a separate thread
+spawn(watchdog_timer)
+
+-- Function to clean up ESP elements when a player leaves
+local function remove_player_esp(plr)
+    if espBoxes[plr] then
+        espBoxes[plr]:Remove()
+        espBoxes[plr] = nil
+    end
+    if espHealthBars[plr] then
+        espHealthBars[plr]:Remove()
+        espHealthBars[plr] = nil
+    end
+    if espTracers[plr] then
+        espTracers[plr]:Remove()
+        espTracers[plr] = nil
+    end
+    if espDistances[plr] then
+        espDistances[plr]:Remove()
+        espDistances[plr] = nil
+    end
+end
+
+-- Connect player removing event
+players.PlayerRemoving:Connect(remove_player_esp)
+
+-- Connect update_esp to RenderStepped
+run_service.RenderStepped:Connect(update_esp)
+
+-- Toggle ESP with key press
+input_service.InputBegan:Connect(function(input)
+    if input.KeyCode == aim_config.GuiToggleKey then
+        toggle_esp(not espEnabled)
+    end
+end)
 
 -- Create GUI
 local screenGui = Instance.new("ScreenGui")
