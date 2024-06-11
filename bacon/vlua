@@ -187,24 +187,6 @@ local function update_esp()
     end
 end
 
--- Function to reset ESP
-local function reset_esp()
-    espEnabled = false
-    toggle_esp(false)
-    espEnabled = true
-    toggle_esp(true)
-end
-
--- Watchdog Timer function
-local function watchdog_timer()
-    while wait(60) do  -- adjust the interval as needed (e.g., every 60 seconds)
-        reset_esp()
-    end
-end
-
--- Start the watchdog timer in a separate thread
-spawn(watchdog_timer)
-
 -- Function to clean up ESP elements when a player leaves
 local function remove_player_esp(plr)
     if espBoxes[plr] then
@@ -230,13 +212,6 @@ players.PlayerRemoving:Connect(remove_player_esp)
 
 -- Connect update_esp to RenderStepped
 run_service.RenderStepped:Connect(update_esp)
-
--- Toggle ESP with key press
-input_service.InputBegan:Connect(function(input)
-    if input.KeyCode == aim_config.GuiToggleKey then
-        toggle_esp(not espEnabled)
-    end
-end)
 
 -- Create GUI
 local screenGui = Instance.new("ScreenGui")
@@ -409,11 +384,12 @@ fovVisibilityDropdown.MouseButton1Click:Connect(function()
 end)
 styleButton(fovVisibilityDropdown)
 
--- Speed and Jump Power Changers
+-- Speed TextBox Configuration
 speedTextBox.Parent = aimFrame
 speedTextBox.Position = UDim2.new(0, 10, 0, 330) -- Adjusted position to fit within the aimFrame
 speedTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 speedTextBox.PlaceholderText = "Enter Speed Value"
+speedTextBox.Text = "" -- Clears the default "TextBox" text
 speedTextBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local newValue = tonumber(speedTextBox.Text)
@@ -427,10 +403,12 @@ speedTextBox.FocusLost:Connect(function(enterPressed)
 end)
 styleButton(speedTextBox)
 
+-- Jump Power TextBox Configuration
 jumpTextBox.Parent = aimFrame
 jumpTextBox.Position = UDim2.new(0, 10, 0, 370) -- Adjusted position to fit within the aimFrame
 jumpTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 jumpTextBox.PlaceholderText = "Enter Jump Power Value"
+jumpTextBox.Text = "" -- Clears the default "TextBox" text
 jumpTextBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local newValue = tonumber(jumpTextBox.Text)
@@ -474,6 +452,7 @@ fovVisibilityDropdown.Parent = aimFrame
 fovVisibilityDropdown.Position = UDim2.new(0, 10, 0, 410) -- Placed here
 fovVisibilityDropdown.Size = UDim2.new(0, 220, 0, 30) -- Placed here
 
+-- Toggle GUI with key press
 input_service.InputBegan:Connect(function(input, gpe)
     if gpe then return end
     if input.UserInputType == Enum.UserInputType.Keyboard then
@@ -484,6 +463,8 @@ input_service.InputBegan:Connect(function(input, gpe)
         elseif input.KeyCode == aim_config.GuiToggleKey then
             guiVisible = not guiVisible
             aimFrame.Visible = guiVisible
+            -- Ensure ESP visibility remains consistent with the ESP button state
+            toggle_esp(espEnabled)
         elseif input.KeyCode == aim_config.KeyActivation then
             aim_config.Enabled = true
         end
