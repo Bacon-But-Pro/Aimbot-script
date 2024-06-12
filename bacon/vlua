@@ -71,7 +71,7 @@ end
 local function get_nearest_player()
     local nearest_plr_data = {aimPart = nil, cursor_dist = math.huge, char_dist = math.huge}
 
-    for _, plr in players:GetPlayers() do
+    for _, plr in pairs(players:GetPlayers()) do
         local passed, target_part = is_player_valid(plr)
         if not (passed and target_part) then continue end
         local screen_pos, on_screen = camera:WorldToViewportPoint(target_part.Position)
@@ -80,9 +80,25 @@ local function get_nearest_player()
 
         if not aim_config.VisibleCheck or (on_screen and in_line_of_sight(camera.CFrame, plr.Character)) then
             if (fov_dist <= aim_config.FOV and fov_dist < nearest_plr_data.cursor_dist) and (not aim_config.DistanceCheck or char_dist < nearest_plr_data.char_dist) then
-                nearest_plr_data.aimPart = target_part
-                nearest_plr_data.cursor_dist = fov_dist
-                nearest_plr_data.char_dist = char_dist
+                -- Check if wall check is enabled and target is visible
+                if aim_config.WallCheck then
+                    local targetPos = camera.CFrame.Position
+                    local targetDir = (target_part.Position - targetPos).Unit
+                    local targetRay = Ray.new(targetPos, targetDir * aim_config.FOV)
+                    local hitPart, hitPos = workspace:FindPartOnRayWithIgnoreList(targetRay, {player.Character})
+                    
+                    if hitPart and hitPart:IsDescendantOf(plr.Character) then
+                        -- Target is visible and not behind a wall
+                        nearest_plr_data.aimPart = target_part
+                        nearest_plr_data.cursor_dist = fov_dist
+                        nearest_plr_data.char_dist = char_dist
+                    end
+                else
+                    -- Wall check is disabled, so aim without checking for obstructions
+                    nearest_plr_data.aimPart = target_part
+                    nearest_plr_data.cursor_dist = fov_dist
+                    nearest_plr_data.char_dist = char_dist
+                end
             end
         end
     end
@@ -220,6 +236,7 @@ local aimHeadButton = Instance.new("TextButton")
 local aimTorsoButton = Instance.new("TextButton")
 local teamCheckButton = Instance.new("TextButton")
 local espButton = Instance.new("TextButton")
+local wallCheckButton = Instance.new("TextButton") -- New wall check button
 local rejoinButton = Instance.new("TextButton")
 local closeButton = Instance.new("TextButton")
 local madeByLabel = Instance.new("TextLabel")
@@ -239,7 +256,7 @@ screenGui.Name = "AimBotGui"
 
 aimFrame.Parent = screenGui
 aimFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-aimFrame.Size = UDim2.new(0, 240, 0, 540) -- Adjusted width to fit text
+aimFrame.Size = UDim2.new(0, 240, 0, 580) -- Adjusted width to fit text
 aimFrame.Position = UDim2.new(0, 10, 0, 10)
 aimFrame.Active = true
 aimFrame.Draggable = true
@@ -297,8 +314,17 @@ espButton.MouseButton1Click:Connect(function()
 end)
 styleButton(espButton)
 
+wallCheckButton.Parent = aimFrame
+wallCheckButton.Position = UDim2.new(0, 10, 0, 170)
+wallCheckButton.Text = "Wall Check: Off"
+wallCheckButton.MouseButton1Click:Connect(function()
+    aim_config.WallCheck = not aim_config.WallCheck
+    wallCheckButton.Text = "Wall Check: " .. (aim_config.WallCheck and "On" or "Off")
+end)
+styleButton(wallCheckButton)
+
 rejoinButton.Parent = aimFrame
-rejoinButton.Position = UDim2.new(0, 10, 0, 170)
+rejoinButton.Position = UDim2.new(0, 10, 0, 210)
 rejoinButton.Text = "Rejoin"
 rejoinButton.MouseButton1Click:Connect(function()
     teleport_service:Teleport(game.PlaceId)
@@ -306,7 +332,7 @@ end)
 styleButton(rejoinButton)
 
 closeButton.Parent = aimFrame
-closeButton.Position = UDim2.new(0, 10, 0, 210)
+closeButton.Position = UDim2.new(0, 10, 0, 250)
 closeButton.Text = "Close GUI"
 closeButton.MouseButton1Click:Connect(function()
     aimFrame.Visible = false
@@ -314,7 +340,7 @@ end)
 styleButton(closeButton)
 
 madeByLabel.Parent = aimFrame
-madeByLabel.Position = UDim2.new(0, 10, 0, 250)
+madeByLabel.Position = UDim2.new(0, 10, 0, 290)
 madeByLabel.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
 madeByLabel.Text = "Made by Bacon"
 madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -323,7 +349,7 @@ madeByLabel.Font = Enum.Font.SourceSansBold
 madeByLabel.TextSize = 18
 
 keybindButton.Parent = aimFrame
-keybindButton.Position = UDim2.new(0, 10, 0, 290)
+keybindButton.Position = UDim2.new(0, 10, 0, 330)
 keybindButton.Text = "Keybind: " .. aim_config.KeyActivation.Name
 keybindButton.MouseButton1Click:Connect(function()
     selectingKeybind = true
@@ -332,7 +358,7 @@ end)
 styleButton(keybindButton)
 
 fovTextBox.Parent = aimFrame
-fovTextBox.Position = UDim2.new(0, 10, 0, 451) -- Adjusted position
+fovTextBox.Position = UDim2.new(0, 10, 0, 450) -- Adjusted position
 fovTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 fovTextBox.PlaceholderText = "FOV: " .. aim_config.FOV
 fovTextBox.Text = ""
@@ -354,7 +380,7 @@ fovTextBox.FocusLost:Connect(function(enterPressed)
 end)
 
 smoothnessTextBox.Parent = aimFrame
-smoothnessTextBox.Position = UDim2.new(0, 10, 0, 491) -- Adjusted position
+smoothnessTextBox.Position = UDim2.new(0, 10, 0, 490) -- Adjusted position
 smoothnessTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 smoothnessTextBox.PlaceholderText = "Smoothness: " .. aim_config.Smoothness
 smoothnessTextBox.Text = ""
@@ -376,7 +402,7 @@ smoothnessTextBox.FocusLost:Connect(function(enterPressed)
 end)
 
 fovVisibilityDropdown.Parent = aimFrame
-fovVisibilityDropdown.Position = UDim2.new(0, 10, 0, 410)
+fovVisibilityDropdown.Position = UDim2.new(0, 10, 0, 530)
 fovVisibilityDropdown.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
 fovVisibilityDropdown.Text = "" .. aim_config.FOVVisibility
 fovVisibilityDropdown.MouseButton1Click:Connect(function()
@@ -386,7 +412,7 @@ styleButton(fovVisibilityDropdown)
 
 -- Speed TextBox Configuration
 speedTextBox.Parent = aimFrame
-speedTextBox.Position = UDim2.new(0, 10, 0, 330) -- Adjusted position to fit within the aimFrame
+speedTextBox.Position = UDim2.new(0, 10, 0, 370) -- Adjusted position to fit within the aimFrame
 speedTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 speedTextBox.PlaceholderText = "Enter Speed Value"
 speedTextBox.Text = "" -- Clears the default "TextBox" text
@@ -397,6 +423,10 @@ speedTextBox.FocusLost:Connect(function(enterPressed)
             local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
                 humanoid.WalkSpeed = newValue
+                while true do
+                    humanoid.WalkSpeed = tonumber(speedTextBox.Text) or 16 -- Set to default if invalid
+                    wait(0.1) -- Wait for a small duration before checking again
+                end
             end
         end
     end
@@ -405,7 +435,7 @@ styleButton(speedTextBox)
 
 -- Jump Power TextBox Configuration
 jumpTextBox.Parent = aimFrame
-jumpTextBox.Position = UDim2.new(0, 10, 0, 370) -- Adjusted position to fit within the aimFrame
+jumpTextBox.Position = UDim2.new(0, 10, 0, 410) -- Adjusted position to fit within the aimFrame
 jumpTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 jumpTextBox.PlaceholderText = "Enter Jump Power Value"
 jumpTextBox.Text = "" -- Clears the default "TextBox" text
@@ -416,6 +446,10 @@ jumpTextBox.FocusLost:Connect(function(enterPressed)
             local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
                 humanoid.JumpPower = newValue
+                while true do
+                    humanoid.JumpPower = tonumber(jumpTextBox.Text) or 50
+                    wait(0.1)
+                end
             end
         end
     end
@@ -423,7 +457,7 @@ end)
 styleButton(jumpTextBox)
 
 dropdownMenu.Parent = aimFrame
-dropdownMenu.Position = UDim2.new(0, 10, 0, 450)
+dropdownMenu.Position = UDim2.new(0, 10, 0, 530)
 dropdownMenu.Size = UDim2.new(0, 220, 0, 90) -- Adjusted width to fit text
 dropdownMenu.Visible = false
 dropdownMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -449,7 +483,7 @@ for i, item in ipairs(dropdownItems) do
 end
 
 fovVisibilityDropdown.Parent = aimFrame
-fovVisibilityDropdown.Position = UDim2.new(0, 10, 0, 410) -- Placed here
+fovVisibilityDropdown.Position = UDim2.new(0, 10, 0, 490) -- Placed here
 fovVisibilityDropdown.Size = UDim2.new(0, 220, 0, 30) -- Placed here
 
 -- Toggle GUI with key press
@@ -551,3 +585,10 @@ end)
 
 -- initial ESP state
 toggle_esp(espEnabled)
+
+local StarterGui = game:GetService("StarterGui")
+StarterGui:SetCore("SendNotification", {
+    Title = "Made By",
+    Text = "Made By Bacon But Pro",
+    Duration = 10
+})
