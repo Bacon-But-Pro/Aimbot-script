@@ -232,11 +232,13 @@ run_service.RenderStepped:Connect(update_esp)
 -- Create GUI
 local screenGui = Instance.new("ScreenGui")
 local aimFrame = Instance.new("Frame")
+local aimFrame2 = Instance.new("Frame")
 local aimHeadButton = Instance.new("TextButton")
 local aimTorsoButton = Instance.new("TextButton")
 local teamCheckButton = Instance.new("TextButton")
 local espButton = Instance.new("TextButton")
 local wallCheckButton = Instance.new("TextButton") -- New wall check button
+local teleportToolsButton = Instance.new("TextButton")
 local rejoinButton = Instance.new("TextButton")
 local closeButton = Instance.new("TextButton")
 local madeByLabel = Instance.new("TextLabel")
@@ -248,6 +250,8 @@ local dropdownMenu = Instance.new("Frame")
 local dropdownItems = {"Always Show FOV", "Only Show FOV While Aimbot Enabled", "Invisible"}
 local speedTextBox = Instance.new("TextBox") -- New speed textbox
 local jumpTextBox = Instance.new("TextBox") -- New jump textbox
+local page1Button = Instance.new("TextButton")
+local page2Button = Instance.new("TextButton")
 local gradient = Instance.new("UIGradient")
 local corner = Instance.new("UICorner")
 
@@ -256,7 +260,7 @@ screenGui.Name = "AimBotGui"
 
 aimFrame.Parent = screenGui
 aimFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-aimFrame.Size = UDim2.new(0, 240, 0, 580) -- Adjusted width to fit text
+aimFrame.Size = UDim2.new(0, 240, 0, 620) -- Increased height to fit the button
 aimFrame.Position = UDim2.new(0, 10, 0, 10)
 aimFrame.Active = true
 aimFrame.Draggable = true
@@ -323,8 +327,17 @@ wallCheckButton.MouseButton1Click:Connect(function()
 end)
 styleButton(wallCheckButton)
 
-rejoinButton.Parent = aimFrame
-rejoinButton.Position = UDim2.new(0, 10, 0, 210)
+teleportToolsButton.Parent = aimFrame2
+teleportToolsButton.Position = UDim2.new(0, 10, 0, 250) -- Adjust position as needed
+teleportToolsButton.Text = "Teleport Tools"
+teleportToolsButton.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/ron12373/Aimbot-script/main/bacon/tools/teleport.lua'))()
+end)
+
+styleButton(teleportToolsButton)
+
+rejoinButton.Parent = aimFrame2
+rejoinButton.Position = UDim2.new(0, 10, 0, 290)
 rejoinButton.Text = "Rejoin"
 rejoinButton.MouseButton1Click:Connect(function()
     teleport_service:Teleport(game.PlaceId)
@@ -332,7 +345,7 @@ end)
 styleButton(rejoinButton)
 
 closeButton.Parent = aimFrame
-closeButton.Position = UDim2.new(0, 10, 0, 250)
+closeButton.Position = UDim2.new(0, 10, 0, 530)
 closeButton.Text = "Close GUI"
 closeButton.MouseButton1Click:Connect(function()
     aimFrame.Visible = false
@@ -340,7 +353,7 @@ end)
 styleButton(closeButton)
 
 madeByLabel.Parent = aimFrame
-madeByLabel.Position = UDim2.new(0, 10, 0, 290)
+madeByLabel.Position = UDim2.new(0, 10, 0, 570)
 madeByLabel.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
 madeByLabel.Text = "Made by Bacon"
 madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -349,7 +362,7 @@ madeByLabel.Font = Enum.Font.SourceSansBold
 madeByLabel.TextSize = 18
 
 keybindButton.Parent = aimFrame
-keybindButton.Position = UDim2.new(0, 10, 0, 330)
+keybindButton.Position = UDim2.new(0, 10, 0, 210)
 keybindButton.Text = "Keybind: " .. aim_config.KeyActivation.Name
 keybindButton.MouseButton1Click:Connect(function()
     selectingKeybind = true
@@ -357,8 +370,8 @@ keybindButton.MouseButton1Click:Connect(function()
 end)
 styleButton(keybindButton)
 
-fovTextBox.Parent = aimFrame
-fovTextBox.Position = UDim2.new(0, 10, 0, 450) -- Adjusted position
+fovTextBox.Parent = aimFrame2
+fovTextBox.Position = UDim2.new(0, 10, 0, 170) -- Adjusted position
 fovTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 fovTextBox.PlaceholderText = "FOV: " .. aim_config.FOV
 fovTextBox.Text = ""
@@ -379,8 +392,8 @@ fovTextBox.FocusLost:Connect(function(enterPressed)
     end
 end)
 
-smoothnessTextBox.Parent = aimFrame
-smoothnessTextBox.Position = UDim2.new(0, 10, 0, 490) -- Adjusted position
+smoothnessTextBox.Parent = aimFrame2
+smoothnessTextBox.Position = UDim2.new(0, 10, 0, 210) -- Adjusted position
 smoothnessTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 smoothnessTextBox.PlaceholderText = "Smoothness: " .. aim_config.Smoothness
 smoothnessTextBox.Text = ""
@@ -401,7 +414,7 @@ smoothnessTextBox.FocusLost:Connect(function(enterPressed)
     end
 end)
 
-fovVisibilityDropdown.Parent = aimFrame
+fovVisibilityDropdown.Parent = aimFrame2
 fovVisibilityDropdown.Position = UDim2.new(0, 10, 0, 530)
 fovVisibilityDropdown.Size = UDim2.new(0, 220, 0, 30) -- Adjusted width to fit text
 fovVisibilityDropdown.Text = "" .. aim_config.FOVVisibility
@@ -411,8 +424,8 @@ end)
 styleButton(fovVisibilityDropdown)
 
 -- Speed TextBox Configuration
-speedTextBox.Parent = aimFrame
-speedTextBox.Position = UDim2.new(0, 10, 0, 370) -- Adjusted position to fit within the aimFrame
+speedTextBox.Parent = aimFrame2
+speedTextBox.Position = UDim2.new(0, 10, 0, 90) -- Adjusted position to fit within the aimFrame
 speedTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 speedTextBox.PlaceholderText = "Enter Speed Value"
 speedTextBox.Text = "" -- Clears the default "TextBox" text
@@ -434,8 +447,8 @@ end)
 styleButton(speedTextBox)
 
 -- Jump Power TextBox Configuration
-jumpTextBox.Parent = aimFrame
-jumpTextBox.Position = UDim2.new(0, 10, 0, 410) -- Adjusted position to fit within the aimFrame
+jumpTextBox.Parent = aimFrame2
+jumpTextBox.Position = UDim2.new(0, 10, 0, 130) -- Adjusted position to fit within the aimFrame
 jumpTextBox.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size
 jumpTextBox.PlaceholderText = "Enter Jump Power Value"
 jumpTextBox.Text = "" -- Clears the default "TextBox" text
@@ -456,8 +469,84 @@ jumpTextBox.FocusLost:Connect(function(enterPressed)
 end)
 styleButton(jumpTextBox)
 
+-- Page 1 Button
+page1Button.Parent = aimFrame2
+page1Button.Position = UDim2.new(0, 10, 0, 10)
+page1Button.Size = UDim2.new(0, 220, 0, 30) -- Adjusted size to fit the text
+page1Button.Text = "Go Back"
+page1Button.TextWrapped = true -- Ensure the text wraps within the button
+page1Button.MouseButton1Click:Connect(function()
+    aimFrame.Visible = true
+    aimFrame2.Visible = false
+end)
+styleButton(page1Button)
+
+-- Page 2 Button
+page2Button.Parent = aimFrame
+page2Button.Position = UDim2.new(0, 10, 0, 490) -- Position it at the bottom
+page2Button.Size = UDim2.new(0, 240, 0, 40) -- Increased size to fit the text
+page2Button.Text = "Go to Settings"
+page2Button.TextWrapped = true -- Ensure the text wraps within the button
+page2Button.MouseButton1Click:Connect(function()
+    aimFrame.Visible = false
+    aimFrame2.Visible = true
+end)
+styleButton(page2Button)
+
+-- Configure aimFrame2
+aimFrame2.Parent = screenGui
+aimFrame2.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+aimFrame2.Size = UDim2.new(0, 240, 0, 580) -- Same size as aimFrame
+aimFrame2.Position = UDim2.new(0, 10, 0, 10)
+aimFrame2.Active = true
+aimFrame2.Draggable = true
+aimFrame2.Visible = false
+
+-- Style and gradient for aimFrame2
+corner:Clone().Parent = aimFrame2
+gradient:Clone().Parent = aimFrame2
+
+-- You can add other GUI elements to aimFrame2 as needed
+local placeholderLabel = Instance.new("TextLabel")
+placeholderLabel.Parent = aimFrame2
+placeholderLabel.Position = UDim2.new(0, 10, 0, 50)
+placeholderLabel.Size = UDim2.new(0, 220, 0, 30)
+placeholderLabel.Text = "Settings"
+placeholderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+placeholderLabel.BackgroundTransparency = 1
+placeholderLabel.Font = Enum.Font.SourceSansBold
+placeholderLabel.TextSize = 18
+
+-- Dragging functionality for aimFrame2
+aimFrame2.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = aimFrame2.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+aimFrame2.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+input_service.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        aimFrame2.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
 dropdownMenu.Parent = aimFrame
-dropdownMenu.Position = UDim2.new(0, 10, 0, 530)
+dropdownMenu.Position = UDim2.new(0, 10, 0, 290)
 dropdownMenu.Size = UDim2.new(0, 220, 0, 90) -- Adjusted width to fit text
 dropdownMenu.Visible = false
 dropdownMenu.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -483,27 +572,66 @@ for i, item in ipairs(dropdownItems) do
 end
 
 fovVisibilityDropdown.Parent = aimFrame
-fovVisibilityDropdown.Position = UDim2.new(0, 10, 0, 490) -- Placed here
+fovVisibilityDropdown.Position = UDim2.new(0, 10, 0, 250) -- Placed here
 fovVisibilityDropdown.Size = UDim2.new(0, 220, 0, 30) -- Placed here
 
--- Toggle GUI with key press
-input_service.InputBegan:Connect(function(input, gpe)
-    if gpe then return end
+-- Track which frame is currently active
+local activeFrame = aimFrame
+
+-- Function to toggle visibility of aimFrame
+local function toggle_aimFrame()
+    activeFrame.Visible = not activeFrame.Visible
+    toggle_esp(espEnabled)  -- Ensure ESP visibility remains consistent with the ESP button state
+end
+
+-- Function to toggle visibility of aimFrame2
+local function toggle_aimFrame2()
+    aimFrame2.Visible = not aimFrame2.Visible
+    toggle_esp(espEnabled)  -- Ensure ESP visibility remains consistent with the ESP button state
+end
+
+-- Connect Left Alt input to toggle visibility of activeFrame
+input_service.InputBegan:Connect(function(input, isProcessed)
+    if isProcessed then return end
+
     if input.UserInputType == Enum.UserInputType.Keyboard then
         if selectingKeybind then
             aim_config.KeyActivation = input.KeyCode
             keybindButton.Text = "Keybind: " .. input.KeyCode.Name
             selectingKeybind = false
         elseif input.KeyCode == aim_config.GuiToggleKey then
-            guiVisible = not guiVisible
-            aimFrame.Visible = guiVisible
-            -- Ensure ESP visibility remains consistent with the ESP button state
-            toggle_esp(espEnabled)
+            if activeFrame == aimFrame then
+                toggle_aimFrame()
+            elseif activeFrame == aimFrame2 then
+                toggle_aimFrame2()
+            end
         elseif input.KeyCode == aim_config.KeyActivation then
             aim_config.Enabled = true
         end
     end
 end)
+
+-- Function to switch active frame to aimFrame
+local function switchToAimFrame()
+    if activeFrame == aimFrame2 then
+        toggle_aimFrame2()
+        activeFrame = aimFrame
+        toggle_aimFrame()
+    end
+end
+
+-- Function to switch active frame to aimFrame2
+local function switchToAimFrame2()
+    if activeFrame == aimFrame then
+        toggle_aimFrame()
+        activeFrame = aimFrame2
+        toggle_aimFrame2()
+    end
+end
+
+-- Connect page buttons to switch between aimFrame and aimFrame2
+page1Button.MouseButton1Click:Connect(switchToAimFrame)
+page2Button.MouseButton1Click:Connect(switchToAimFrame2)
 
 input_service.InputEnded:Connect(function(input, gpe)
     if gpe then return end
@@ -590,5 +718,6 @@ local StarterGui = game:GetService("StarterGui")
 StarterGui:SetCore("SendNotification", {
     Title = "Made By",
     Text = "Made By Bacon But Pro",
+    Icon = "rbxassetid://17825558705",
     Duration = 10
 })
