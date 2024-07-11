@@ -717,7 +717,7 @@ toggle_esp(espEnabled)
 local StarterGui = game:GetService("StarterGui")
 StarterGui:SetCore("SendNotification", {
     Title = "Made By",
-    Text = "Made By Bacon But Pro",
+    Text = "Bacon But Pro",
     Icon = "rbxassetid://17825558705",
     Duration = 10
 })
