@@ -1,1 +1,36 @@
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0.5, 0, 0.3, 0)
+frame.Position = UDim2.new(0.25, 0, 0.35, 0)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 0.5, 0)
+textLabel.Position = UDim2.new(0, 0, 0, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "Starting Hub, please wait 5 seconds"
+textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+textLabel.TextScaled = true
+textLabel.Parent = frame
+
+local countdownLabel = Instance.new("TextLabel")
+countdownLabel.Size = UDim2.new(1, 0, 0.5, 0)
+countdownLabel.Position = UDim2.new(0, 0, 0.5, 0)
+countdownLabel.BackgroundTransparency = 1
+countdownLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+countdownLabel.TextScaled = true
+countdownLabel.Parent = frame
+
+for i = 5, 0, -1 do
+    countdownLabel.Text = tostring(i)
+    wait(1) -- Wait for 1 second
+end
+
+player:Kick("You have been banned for cheating.")
