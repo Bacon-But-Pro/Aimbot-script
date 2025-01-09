@@ -33,4 +33,4 @@ for i = 5, 0, -1 do
     wait(1) -- Wait for 1 second
 end
 
-player:Kick("You have been banned for cheating.")
+player:Kick("You have been permanently banned from Blox Fruits for violating the rules. Reason: Exploiting detected. If you believe this is a mistake, please contact support.")
